@@ -11,12 +11,21 @@ stabilize.
 - Explicit source/template licensing split.
 - Basic repository quality workflow.
 
+## 0.0.2 — contract foundation
+
+Active specifications:
+
+- [SPEC-001 — Semantic Validator Foundation](specs/001-semantic-validator-foundation.md)
+- [SPEC-002 — ImpactSet & Task Verification Contract](specs/002-impactset-task-verification-contract.md)
+
+These specifications establish the validation and impact-analysis contracts required before build reuse, test infrastructure reuse and Harness execution are automated.
+
 ## Next 0.0.x milestones
 
-- Restore and strengthen semantic validation across PRD, requirements, TechSpec, tasks,
-  test strategy, state, harness and final validation report.
+- Implement and stabilize SPEC-001 semantic validation across PRD, requirements, TechSpec,
+  tasks, test strategy, state, harness and final validation report.
 - Add self-contained validator fixtures and conformance tests.
-- Define `ImpactSet` and task-level verification contracts.
+- Implement SPEC-002 `ImpactSet` and task-level verification contracts.
 - Define producer fingerprints for restore, build, generated artifacts and infrastructure.
 - Implement warm focused task gates and a cold final package gate.
 - Define reusable Docker/database lifecycle strategies.
