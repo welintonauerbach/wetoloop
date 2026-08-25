@@ -1,0 +1,5 @@
+{
+  "extends": "../positive/plan.json",
+  "mutation": { "path": "artifacts.techspec", "value": "../outside.md" },
+  "expected_error": "unsafe artifact path"
+}

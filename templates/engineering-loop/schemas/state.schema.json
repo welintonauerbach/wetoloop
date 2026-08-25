@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/welintonauerbach/wetoloop/schemas/engineering-loop/v0.0.1/state.schema.json",
+  "title": "WetoLoop Engineering Loop 0.0.1 execution state front matter",
+  "type": "object",
+  "required": ["schema_version", "loop_version", "plan_id", "current", "completed_tasks", "repository", "run", "last_gate", "location", "next_step", "blockers", "working_tree", "measurement", "producers", "updated_at"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "loop_version": { "const": "0.0.1" },
+    "plan_id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$" },
+    "current": {
+      "type": "object",
+      "required": ["phase", "task", "status"],
+      "properties": {
+        "phase": { "type": ["string", "integer"] },
+        "task": { "type": ["string", "null"], "pattern": "^T[0-9]{2,}$" },
+        "status": { "enum": ["pending", "in_progress", "blocked", "waiting_for_fresh_verification", "completed", "cancelled", "superseded", "ready_for_execution"] }
+      },
+      "additionalProperties": false
+    },
+    "completed_tasks": { "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^T[0-9]{2,}$" } },
+    "repository": {
+      "type": "object",
+      "required": ["absolute_path", "branch", "base_branch", "approved_base_sha"],
+      "properties": {
+        "absolute_path": { "type": "string", "minLength": 1 },
+        "branch": { "type": "string", "minLength": 1 },
+        "base_branch": { "type": "string", "minLength": 1 },
+        "approved_base_sha": { "type": ["string", "null"], "pattern": "^[0-9a-f]{40}$" }
+      },
+      "additionalProperties": true
+    },
+    "run": {
+      "type": "object",
+      "required": ["id", "started_at", "writer"],
+      "properties": {
+        "id": { "type": ["string", "null"] },
+        "started_at": { "type": ["string", "null"], "format": "date-time" },
+        "writer": { "type": ["string", "null"] }
+      },
+      "additionalProperties": true
+    },
+    "last_gate": {
+      "type": "object",
+      "required": ["id", "result", "run_id", "finished_at"],
+      "properties": {
+        "id": { "type": ["string", "null"] },
+        "result": { "type": "string", "minLength": 1 },
+        "run_id": { "type": ["string", "null"] },
+        "finished_at": { "type": ["string", "null"], "format": "date-time" }
+      },
+      "additionalProperties": true
+    },
+    "location": {
+      "type": "object",
+      "required": ["lifecycle", "directory"],
+      "properties": {
+        "lifecycle": { "enum": ["backlog", "in_progress", "done", "template"] },
+        "directory": { "$ref": "plan.schema.json#/$defs/safePath" }
+      }
+    },
+    "next_step": {
+      "type": "object",
+      "required": ["command_id", "summary"],
+      "properties": {
+        "command_id": { "type": "string", "minLength": 1 },
+        "summary": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": true
+    },
+    "blockers": { "type": "array", "items": { "type": "object" } },
+    "working_tree": {
+      "type": "object",
+      "required": ["expected_dirty_files", "unexpected_dirty_files"],
+      "properties": {
+        "expected_dirty_files": { "type": "array", "uniqueItems": true, "items": { "$ref": "plan.schema.json#/$defs/safePath" } },
+        "unexpected_dirty_files": { "type": "array", "uniqueItems": true, "items": { "$ref": "plan.schema.json#/$defs/safePath" } }
+      }
+    },
+    "measurement": { "type": "object", "minProperties": 1 },
+    "producers": { "type": "array", "uniqueItems": true, "items": { "type": "object" } },
+    "updated_at": { "type": "string", "format": "date-time" }
+  },
+  "x-semanticConstraints": [
+    "STATE lifecycle and directory match the physical activity bucket",
+    "current task exists and agrees with task front matter",
+    "actual dirty files equal the expected set and unexpected set is empty before gates",
+    "producer Run IDs are unique"
+  ],
+  "additionalProperties": true
+}

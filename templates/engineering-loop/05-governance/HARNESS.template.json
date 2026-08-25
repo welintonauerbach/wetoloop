@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "profile": "default",
+  "loopVersion": "0.0.1",
+  "tokens": {
+    "workspaceFolder": { "kind": "workspace_root" },
+    "planDir": { "kind": "selected_plan_directory" }
+  },
+  "commands": [
+    {
+      "id": "validate-plan",
+      "label": "Validate Engineering Loop plan",
+      "executable": "python",
+      "args": [
+        "docs/plans/_templates/engineering-loop/scripts/validate_plan.py",
+        "--plan-dir",
+        "<planDir>"
+      ],
+      "cwd": "<workspaceFolder>",
+      "mutationClass": "read_only",
+      "timeoutSeconds": 120,
+      "enabled": true,
+      "sensitiveArgIndexes": []
+    }
+  ],
+  "execution": {
+    "useShell": false,
+    "singleWriter": true,
+    "requireFreshRepositoryPreflight": true,
+    "captureStdout": true,
+    "captureStderr": true,
+    "redactEnvironment": true,
+    "createRunRecord": true
+  },
+  "lifecycle": {
+    "movesEnabled": false,
+    "requirePreview": true,
+    "requireConfirmation": true,
+    "denyCrossRootMoves": true,
+    "verifyDestinationBeforeSourceRemoval": true
+  }
+}

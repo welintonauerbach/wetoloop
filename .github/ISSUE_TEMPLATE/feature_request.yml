@@ -1,0 +1,38 @@
+name: Feature request
+description: Propose an improvement to WetoLoop
+title: "[feature] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What engineering problem should WetoLoop solve?
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Desired outcome
+      description: Describe observable behavior rather than only an implementation idea.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Core contract
+        - Templates
+        - Schemas / validation
+        - CLI
+        - Harness
+        - Skills
+        - Documentation
+        - Other
+    validations:
+      required: true

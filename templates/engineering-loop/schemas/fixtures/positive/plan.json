@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "loop_version": "0.0.1",
+  "plan": { "id": "fixture-plan", "title": "Positive fixture", "tier": "X", "lifecycle": "backlog", "status": "planning" },
+  "authority": { "requirements": ["01-definition/REQUIREMENTS.md"] },
+  "repository": { "expected_root": ".", "base_branch": "main", "working_branch": "wto/fixture", "approved_base_sha": null, "worktree_policy": "isolated_before_execution", "single_writer": true },
+  "artifacts": {
+    "readme": "README.md",
+    "requirements": "01-definition/REQUIREMENTS.md",
+    "techspec": "02-design/TECHSPEC.md",
+    "tasks": "03-execution/tasks",
+    "validation": "04-validation/VALIDATION_REPORT.md",
+    "learnings": "05-governance/LEARNINGS.md"
+  },
+  "applicability": { "requirements": "required", "independent_verifier": "required" },
+  "groups": [
+    { "id": "definition", "order": 1, "directory": "01-definition", "label": "Definition" },
+    { "id": "design", "order": 2, "directory": "02-design", "label": "Design" },
+    { "id": "execution", "order": 3, "directory": "03-execution", "label": "Execution" },
+    { "id": "validation", "order": 4, "directory": "04-validation", "label": "Validation" },
+    { "id": "governance", "order": 5, "directory": "05-governance", "label": "Governance" }
+  ]
+}

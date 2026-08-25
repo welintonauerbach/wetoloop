@@ -1,0 +1,102 @@
+schema_version: 1
+loop_version: "0.0.1"
+
+plan:
+  id: replace-plan-id
+  title: Replace with an outcome-oriented title
+  tier: M
+  issue: null
+  requirement_prefix: REQ
+  lifecycle: backlog
+  status: planning
+  created_at: 2026-01-01T00:00:00Z
+  updated_at: 2026-01-01T00:00:00Z
+
+authority:
+  architecture_root: docs
+  requirements:
+    - 01-definition/REQUIREMENTS.md
+  technical_contract:
+    - 02-design/TECHSPEC.md
+    - 02-design/03-contracts.md
+    - 02-design/adrs
+  execution_contract:
+    - 03-execution/TASKS.md
+    - 03-execution/tasks
+  runtime_state:
+    - 03-execution/STATE.md
+  validation_contract:
+    - 04-validation/TEST_STRATEGY.md
+    - 04-validation/VALIDATION_REPORT.md
+
+repository:
+  expected_root: .
+  base_branch: main
+  working_branch: replace-working-branch
+  approved_base_sha: null
+  worktree_policy: isolated_before_execution
+  single_writer: true
+
+artifacts:
+  readme: README.md
+  context: 01-definition/00-context.md
+  recon: 01-definition/01-recon.md
+  requirements: 01-definition/REQUIREMENTS.md
+  prd: 01-definition/PRD.md
+  decisions: 02-design/02-decisions.md
+  contracts: 02-design/03-contracts.md
+  techspec: 02-design/TECHSPEC.md
+  adrs_directory: 02-design/adrs
+  readiness: 03-execution/04-readiness.md
+  tasks_index: 03-execution/TASKS.md
+  tasks_directory: 03-execution/tasks
+  execution_prompt: 03-execution/EXECUTION_PROMPT.md
+  review_loop: 03-execution/REVIEW_LOOP.md
+  corrective_loop: 03-execution/CORRECTIVE_LOOP.md
+  state: 03-execution/STATE.md
+  test_strategy: 04-validation/TEST_STRATEGY.md
+  validation_report: 04-validation/VALIDATION_REPORT.md
+  evidence_directory: 04-validation/evidence
+  harness: 05-governance/HARNESS.json
+  approval_record: 05-governance/APPROVAL_RECORD.md
+  learnings: 05-governance/LEARNINGS.md
+
+applicability:
+  context: required
+  recon: required
+  requirements: required
+  prd: required
+  decisions: required
+  contracts: required
+  techspec: required
+  tasks: required
+  test_strategy: required
+  execution_prompt: required
+  review_loop: required
+  corrective_loop: required
+  state: required
+  validation_report: required
+  independent_verifier: required
+  learnings: required
+
+groups:
+  - id: definition
+    order: 1
+    directory: 01-definition
+    label: Definition
+  - id: design
+    order: 2
+    directory: 02-design
+    label: Design and Contracts
+  - id: execution
+    order: 3
+    directory: 03-execution
+    label: Execution
+  - id: validation
+    order: 4
+    directory: 04-validation
+    label: Validation and Evidence
+  - id: governance
+    order: 5
+    directory: 05-governance
+    label: Governance and Handoff

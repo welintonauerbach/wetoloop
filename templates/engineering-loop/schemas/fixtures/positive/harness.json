@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "profile": "fixture",
+  "loopVersion": "0.0.1",
+  "tokens": { "workspaceFolder": { "kind": "workspace_root" } },
+  "commands": [
+    { "id": "check", "label": "Check", "executable": "npm", "args": ["run", "check"], "cwd": "<workspaceFolder>", "mutationClass": "read_only", "timeoutSeconds": 120, "enabled": true }
+  ],
+  "execution": { "useShell": false, "singleWriter": true, "requireFreshRepositoryPreflight": true },
+  "lifecycle": { "movesEnabled": false, "requirePreview": true, "requireConfirmation": true, "denyCrossRootMoves": true, "verifyDestinationBeforeSourceRemoval": true }
+}

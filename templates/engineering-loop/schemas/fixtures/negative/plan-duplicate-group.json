@@ -1,0 +1,5 @@
+{
+  "extends": "../positive/plan.json",
+  "mutation": { "path": "groups.1", "valueFrom": "groups.0" },
+  "expected_error": "five unique ordered groups"
+}

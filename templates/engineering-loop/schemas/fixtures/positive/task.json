@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "loop_version": "0.0.1",
+  "id": "T01",
+  "title": "Positive task fixture",
+  "phase": 1,
+  "status": "pending",
+  "requirements": ["REQ-FUN-001"],
+  "depends_on": [],
+  "tests": ["TEST-T01-01"],
+  "gate": "focused",
+  "builder": "unassigned",
+  "reviewer": "unassigned",
+  "commit": { "expected_message": "feat(scope): complete T01", "sha": null },
+  "evidence": [],
+  "started_at": null,
+  "completed_at": null,
+  "blocker": null,
+  "terminal_reason": null
+}

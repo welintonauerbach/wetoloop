@@ -1,0 +1,5 @@
+{
+  "extends": "../positive/plan.json",
+  "mutation": { "path": "artifacts.techspec", "valueFrom": "artifacts.requirements" },
+  "expected_error": "duplicate artifact ownership"
+}

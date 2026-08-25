@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "loop_version": "0.0.1",
+  "plan_id": "fixture-plan",
+  "current": { "phase": "readiness", "task": null, "status": "pending" },
+  "completed_tasks": [],
+  "repository": { "absolute_path": "C:/repo", "branch": "wto/fixture", "base_branch": "main", "approved_base_sha": null },
+  "run": { "id": null, "started_at": null, "writer": null },
+  "last_gate": { "id": "gate-f", "result": "not_run", "run_id": null, "finished_at": null },
+  "location": { "lifecycle": "backlog", "directory": "docs/plans/_backlog/fixture-plan" },
+  "next_step": { "command_id": "owner-approval", "summary": "Complete readiness" },
+  "blockers": [],
+  "working_tree": { "expected_dirty_files": [], "unexpected_dirty_files": [] },
+  "measurement": { "package_gate": "not_run" },
+  "producers": [],
+  "updated_at": "2026-01-01T00:00:00Z"
+}

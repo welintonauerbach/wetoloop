@@ -1,0 +1,5 @@
+{
+  "extends": "../positive/harness.json",
+  "mutation": { "path": "commands.0", "value": { "id": "unsafe", "label": "Unsafe", "command": "npm test && remove-stuff", "cwd": "<workspaceFolder>", "mutationClass": "workspace_write", "timeoutSeconds": 120, "enabled": true } },
+  "expected_error": "raw shell command"
+}

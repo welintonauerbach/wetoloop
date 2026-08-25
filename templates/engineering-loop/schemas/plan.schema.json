@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/welintonauerbach/wetoloop/schemas/engineering-loop/v0.0.1/plan.schema.json",
+  "title": "WetoLoop Engineering Loop 0.0.1 plan",
+  "type": "object",
+  "required": ["schema_version", "loop_version", "plan", "authority", "repository", "artifacts", "applicability", "groups"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "loop_version": { "const": "0.0.1" },
+    "plan": {
+      "type": "object",
+      "required": ["id", "title", "tier", "lifecycle", "status"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$" },
+        "title": { "type": "string", "minLength": 1 },
+        "tier": { "enum": ["S", "M", "L", "X"] },
+        "lifecycle": { "enum": ["backlog", "in_progress", "done", "template"] },
+        "status": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": true
+    },
+    "authority": { "type": "object", "minProperties": 1 },
+    "repository": {
+      "type": "object",
+      "required": ["expected_root", "base_branch", "working_branch", "worktree_policy", "single_writer"],
+      "properties": {
+        "expected_root": { "$ref": "#/$defs/safePath" },
+        "base_branch": { "type": "string", "minLength": 1 },
+        "working_branch": { "type": "string", "minLength": 1 },
+        "approved_base_sha": { "type": ["string", "null"], "pattern": "^[0-9a-f]{40}$" },
+        "worktree_policy": { "type": "string", "minLength": 1 },
+        "single_writer": { "const": true }
+      },
+      "additionalProperties": true
+    },
+    "artifacts": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "oneOf": [
+          { "$ref": "#/$defs/safePath" },
+          { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/safePath" } }
+        ]
+      }
+    },
+    "applicability": { "type": "object", "minProperties": 1, "additionalProperties": { "enum": ["required", "optional", "not_applicable", "required_for_p0"] } },
+    "groups": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "prefixItems": [
+        { "$ref": "#/$defs/definitionGroup" },
+        { "$ref": "#/$defs/designGroup" },
+        { "$ref": "#/$defs/executionGroup" },
+        { "$ref": "#/$defs/validationGroup" },
+        { "$ref": "#/$defs/governanceGroup" }
+      ],
+      "items": false
+    },
+    "harness": {
+      "type": "object",
+      "properties": {
+        "allow_lifecycle_moves": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "safePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?![A-Za-z]:)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\).+$"
+    },
+    "groupBase": {
+      "type": "object",
+      "required": ["id", "order", "directory", "label"],
+      "properties": {
+        "id": { "type": "string" },
+        "order": { "type": "integer" },
+        "directory": { "$ref": "#/$defs/safePath" },
+        "label": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "definitionGroup": { "allOf": [{ "$ref": "#/$defs/groupBase" }, { "type": "object", "properties": { "id": { "const": "definition" }, "order": { "const": 1 }, "directory": { "const": "01-definition" }, "label": { "type": "string", "minLength": 1 } } }] },
+    "designGroup": { "allOf": [{ "$ref": "#/$defs/groupBase" }, { "type": "object", "properties": { "id": { "const": "design" }, "order": { "const": 2 }, "directory": { "const": "02-design" }, "label": { "type": "string", "minLength": 1 } } }] },
+    "executionGroup": { "allOf": [{ "$ref": "#/$defs/groupBase" }, { "type": "object", "properties": { "id": { "const": "execution" }, "order": { "const": 3 }, "directory": { "const": "03-execution" }, "label": { "type": "string", "minLength": 1 } } }] },
+    "validationGroup": { "allOf": [{ "$ref": "#/$defs/groupBase" }, { "type": "object", "properties": { "id": { "const": "validation" }, "order": { "const": 4 }, "directory": { "const": "04-validation" }, "label": { "type": "string", "minLength": 1 } } }] },
+    "governanceGroup": { "allOf": [{ "$ref": "#/$defs/groupBase" }, { "type": "object", "properties": { "id": { "const": "governance" }, "order": { "const": 5 }, "directory": { "const": "05-governance" }, "label": { "type": "string", "minLength": 1 } } }] }
+  },
+  "x-semanticConstraints": [
+    "Every artifact path resolves inside the activity root",
+    "Every artifact path is owned by exactly one declared group",
+    "No two artifact keys resolve to the same normalized path",
+    "Physical lifecycle bucket equals plan.lifecycle"
+  ],
+  "additionalProperties": true
+}

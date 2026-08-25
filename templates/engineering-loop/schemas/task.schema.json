@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/welintonauerbach/wetoloop/schemas/engineering-loop/v0.0.1/task.schema.json",
+  "title": "WetoLoop Engineering Loop 0.0.1 task front matter",
+  "type": "object",
+  "required": ["schema_version", "loop_version", "id", "title", "phase", "status", "requirements", "depends_on", "tests", "gate", "builder", "reviewer", "commit", "evidence", "started_at", "completed_at", "blocker", "terminal_reason"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "loop_version": { "const": "0.0.1" },
+    "id": { "type": "string", "pattern": "^T[0-9]{2,}$" },
+    "title": { "type": "string", "minLength": 1 },
+    "phase": { "type": ["string", "integer"] },
+    "status": { "enum": ["pending", "in_progress", "blocked", "waiting_for_fresh_verification", "completed", "cancelled", "superseded"] },
+    "requirements": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "pattern": "^[A-Z][A-Z0-9]*-[A-Z]+-[0-9]{3}$" } },
+    "depends_on": { "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^T[0-9]{2,}$" } },
+    "tests": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "pattern": "^(TEST|SENSOR)-[A-Z0-9-]+$" } },
+    "gate": { "type": "string", "minLength": 1 },
+    "builder": { "type": "string", "minLength": 1 },
+    "reviewer": { "type": "string", "minLength": 1 },
+    "commit": {
+      "type": "object",
+      "required": ["expected_message", "sha"],
+      "properties": {
+        "expected_message": { "type": "string", "minLength": 1 },
+        "sha": { "type": ["string", "null"], "pattern": "^[0-9a-f]{40}$" }
+      },
+      "additionalProperties": false
+    },
+    "evidence": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+    "started_at": { "type": ["string", "null"], "format": "date-time" },
+    "completed_at": { "type": ["string", "null"], "format": "date-time" },
+    "blocker": { "type": ["object", "null"] },
+    "terminal_reason": { "type": ["string", "null"] }
+  },
+  "x-semanticConstraints": [
+    "completed requires a 40-character commit SHA, fresh evidence and independent reviewer",
+    "blocked requires a structured blocker",
+    "cancelled and superseded require terminal_reason",
+    "task dependency graph is acyclic"
+  ],
+  "additionalProperties": true
+}

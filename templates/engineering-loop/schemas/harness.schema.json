@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/welintonauerbach/wetoloop/schemas/engineering-loop/v0.0.1/harness.schema.json",
+  "title": "WetoLoop Engineering Loop 0.0.1 project harness",
+  "type": "object",
+  "required": ["schemaVersion", "profile", "loopVersion", "tokens", "commands", "execution", "lifecycle"],
+  "properties": {
+    "$schema": { "type": "string", "minLength": 1 },
+    "schemaVersion": { "const": 1 },
+    "profile": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$" },
+    "loopVersion": { "const": "0.0.1" },
+    "tokens": {
+      "type": "object",
+      "properties": {
+        "workspaceFolder": {
+          "type": "object",
+          "required": ["kind"],
+          "properties": { "kind": { "const": "workspace_root" } },
+          "additionalProperties": false
+        },
+        "planDir": {
+          "type": "object",
+          "required": ["kind"],
+          "properties": { "kind": { "const": "selected_plan_directory" } },
+          "additionalProperties": false
+        },
+        "planRoot": {
+          "type": "object",
+          "required": ["kind"],
+          "properties": { "kind": { "const": "selected_plan_directory" } },
+          "additionalProperties": false
+        },
+        "taskFile": {
+          "type": "object",
+          "required": ["kind"],
+          "properties": { "kind": { "const": "selected_task_file" } },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "commands": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "required": ["id", "label", "executable", "args", "cwd", "mutationClass", "timeoutSeconds", "enabled"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$" },
+          "label": { "type": "string", "minLength": 1 },
+          "executable": { "type": "string", "pattern": "^[A-Za-z0-9._-]+$" },
+          "args": { "type": "array", "items": { "type": "string" } },
+          "cwd": { "type": "string", "minLength": 1 },
+          "mutationClass": { "enum": ["read_only", "workspace_write", "external_write"] },
+          "timeoutSeconds": { "type": "integer", "minimum": 1, "maximum": 3600 },
+          "enabled": { "type": "boolean" },
+          "requiresConfirmation": { "type": "boolean" },
+          "sensitiveArgIndexes": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "execution": {
+      "type": "object",
+      "required": ["useShell", "singleWriter", "requireFreshRepositoryPreflight"],
+      "properties": {
+        "useShell": { "const": false },
+        "singleWriter": { "const": true },
+        "requireFreshRepositoryPreflight": { "const": true }
+      },
+      "additionalProperties": true
+    },
+    "lifecycle": {
+      "type": "object",
+      "required": ["movesEnabled", "requirePreview", "requireConfirmation", "denyCrossRootMoves", "verifyDestinationBeforeSourceRemoval"],
+      "properties": {
+        "movesEnabled": { "type": "boolean" },
+        "requirePreview": { "const": true },
+        "requireConfirmation": { "const": true },
+        "denyCrossRootMoves": { "const": true },
+        "verifyDestinationBeforeSourceRemoval": { "const": true }
+      },
+      "additionalProperties": true
+    }
+  },
+  "x-semanticConstraints": [
+    "Command IDs are unique",
+    "Tokens resolve from a closed set to contained paths",
+    "Mutating and external commands require confirmation",
+    "Raw shell templates and metacharacter interpolation are forbidden"
+  ],
+  "additionalProperties": false
+}

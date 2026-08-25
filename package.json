@@ -1,0 +1,21 @@
+{
+  "name": "wetoloop",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Workflow Engine for Task Orchestration — deterministic engineering loops for AI coding agents.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "check": "node scripts/repo-check.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "check:python": "python -X utf8 -m compileall -q templates/engineering-loop/scripts",
+    "quality": "npm run check && npm test && npm run check:python"
+  },
+  "engines": {
+    "node": ">=20",
+    "npm": ">=10"
+  }
+}
