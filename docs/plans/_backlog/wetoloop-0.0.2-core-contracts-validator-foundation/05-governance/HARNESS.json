@@ -1,0 +1,46 @@
+{
+  "$schema": "../../../../templates/engineering-loop/schemas/harness.schema.json",
+  "schemaVersion": 1,
+  "profile": "wetoloop-0.0.2-planning",
+  "loopVersion": "0.0.1",
+  "tokens": {
+    "workspaceFolder": { "kind": "workspace_root" },
+    "planDir": { "kind": "selected_plan_directory" }
+  },
+  "commands": [
+    {
+      "id": "validate-plan",
+      "label": "Validate WetoLoop activity",
+      "executable": "python",
+      "args": [
+        "-X",
+        "utf8",
+        "templates/engineering-loop/scripts/validate_plan.py",
+        "--plan",
+        "<planDir>"
+      ],
+      "cwd": "<workspaceFolder>",
+      "mutationClass": "read_only",
+      "timeoutSeconds": 120,
+      "enabled": true,
+      "requiresConfirmation": false,
+      "sensitiveArgIndexes": []
+    }
+  ],
+  "execution": {
+    "useShell": false,
+    "singleWriter": true,
+    "requireFreshRepositoryPreflight": true,
+    "captureStdout": true,
+    "captureStderr": true,
+    "redactEnvironment": true,
+    "createRunRecord": true
+  },
+  "lifecycle": {
+    "movesEnabled": false,
+    "requirePreview": true,
+    "requireConfirmation": true,
+    "denyCrossRootMoves": true,
+    "verifyDestinationBeforeSourceRemoval": true
+  }
+}
