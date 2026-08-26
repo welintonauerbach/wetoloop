@@ -10,13 +10,18 @@ Status: `PENDING_OWNER_APPROVAL`
 | DEC-002 — Define ImpactSet/fingerprints; defer automatic engine | APPROVED | 2026-08-26 |
 | DEC-003 — Start on 0.0.1 and migrate/dogfood before Gate G | APPROVED | 2026-08-26 |
 
+## Planning validation
+
+- WetoLoop 0.0.1 aggregate validation: PASS, 7/7 applicable validators.
+- Planning HARNESS schema validation: PASS.
+- Activity remains in `_backlog` and implementation has not started.
+
 ## Execution approval
 
-Architectural decisions are approved, but materialization of this planning pack does not by itself authorize implementation.
+Architectural decisions and planning validation are complete, but materialization of this planning pack does not by itself authorize implementation.
 
 Before `APPROVED_FOR_EXECUTION`:
 
-- aggregate planning validation must run from a checked-out worktree;
 - execution writer must be assigned;
 - independent verifier must be assigned;
 - isolated worktree/branch facts must be reconciled;
