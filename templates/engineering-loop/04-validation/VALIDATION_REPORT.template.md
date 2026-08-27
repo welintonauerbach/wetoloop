@@ -4,20 +4,21 @@
 
 | Field | Value |
 |---|---|
-| Loop version | `0.0.1` |
+| Loop version | `0.0.2` |
 | Date | {{DATE}} |
 | Requirements | {{REQUIREMENTS_VERSION}} |
-| Branch / HEAD | {{BRANCH}} / {{HEAD_SHA}} |
+| Branch / candidate HEAD | {{BRANCH}} / {{HEAD_SHA}} |
 | Base / diff | {{BASE_SHA}} / {{DIFF_RANGE}} |
-| Run ID | {{RUN_ID}} |
+| Candidate Run ID | {{RUN_ID}} |
 | Configuration | {{CONFIGURATION}} |
 | Environment | {{ENVIRONMENT}} |
-| Verifier | {{INDEPENDENT_VERIFIER}} |
-| Verdict | {{VERDICT}} |
+| Independent verifier | {{INDEPENDENT_VERIFIER}} |
+| Gate G verdict | {{GATE_G_VERDICT}} |
+| Gate H verdict | {{GATE_H_VERDICT}} |
 
 ## 2. Task completion
 
-| Task | Commit | Focused gate | Independent review | Evidence | Result |
+| Task | Commit | Focused gate | Review | Evidence | Result |
 |---|---|---|---|---|---|
 | {{TASK_ID}} | {{COMMIT_SHA}} | {{GATE_RESULT}} | {{REVIEW_RESULT}} | {{EVIDENCE_PATH}} | {{RESULT}} |
 
@@ -25,63 +26,70 @@
 
 Evidence uses `file:line + assertion` or an equally precise machine artifact. A requirement without evidence is uncovered.
 
-| Requirement | Test ID | Evidence | Run ID | Result |
+| Requirement | Test/evidence ID | Evidence | Run ID | Result |
 |---|---|---|---|---|
 | {{REQ_ID}} | {{TEST_ID}} | {{FILE_LINE_AND_ASSERTION}} | {{RUN_ID}} | {{RESULT}} |
 
-## 4. Package gate execution
+## 4. Candidate Gate G execution
+
+Gate G validates the final activity candidate before merge. It is intentionally bounded by the accumulated `ImpactSet` and changed mandatory boundaries; it is not the default owner of repository-wide full regression when Gate H is guaranteed.
 
 ```text
-Command(s): {{COMMANDS}}
-Filter/scope: {{FILTER_SCOPE}}
-Exit code: {{EXIT_CODE}}
-Duration: {{DURATION}}
-Unique test methods planned: {{PLANNED_TESTS}}
-Discovered: {{DISCOVERED}}
-Executed: {{EXECUTED}}
-Passed: {{PASSED}}
-Failed: {{FAILED}}
-Skipped + justification: {{SKIPPED_AND_JUSTIFICATION}}
-Timeouts: {{TIMEOUTS}}
-Retries: {{RETRIES}}
-Flakes: {{FLAKES}}
-Warnings: {{WARNINGS}}
-Test count before: {{TEST_COUNT_BEFORE}}
-Test count after: {{TEST_COUNT_AFTER}}
+Candidate SHA: {{HEAD_SHA}}
+Command(s): {{GATE_G_COMMANDS}}
+Scope / accumulated ImpactSet: {{GATE_G_SCOPE}}
+Exit code: {{GATE_G_EXIT_CODE}}
+Duration: {{GATE_G_DURATION}}
+Discovered: {{GATE_G_DISCOVERED}}
+Executed: {{GATE_G_EXECUTED}}
+Passed: {{GATE_G_PASSED}}
+Failed: {{GATE_G_FAILED}}
+Skipped + justification: {{GATE_G_SKIPPED}}
+Affected migrations executed: {{GATE_G_MIGRATIONS}}
+Timeouts: {{GATE_G_TIMEOUTS}}
+Retries: {{GATE_G_RETRIES}}
+Flakes: {{GATE_G_FLAKES}}
+Warnings: {{GATE_G_WARNINGS}}
 ```
 
-Reconciliation assertion: `discovered = executed + justified_not_executed`; `executed = passed + failed + skipped_as_reported_by_runner`. Explain any runner-specific counting difference here: {{COUNT_RECONCILIATION}}.
+Full repository regression in Gate G: `{{YES_NO}}`.
+
+If `YES`, mandatory reason: {{PREMERGE_FULL_REGRESSION_REASON}}.
+
+Allowed reasons are limited to absence of a guaranteed Gate H, mandatory repository merge policy without an equivalent post-merge gate, repository-wide runner/build/infrastructure risk that cannot be bounded, or explicit owner-authorized release exception.
 
 ## 5. Producers and artifacts
 
-| Producer | Expected executions | Actual executions | Reused by | Artifact | Hash | Justification | Result |
-|---|---:|---:|---|---|---|---|---|
-| {{PRODUCER}} | {{EXPECTED}} | {{ACTUAL}} | {{CONSUMERS}} | {{ARTIFACT_PATH}} | {{HASH}} | {{JUSTIFICATION}} | {{RESULT}} |
+| Producer | Gate | Expected executions | Actual executions | Reused by | Artifact | Hash | Result |
+|---|---|---:|---:|---|---|---|---|
+| {{PRODUCER}} | {{G_OR_H}} | {{EXPECTED}} | {{ACTUAL}} | {{CONSUMERS}} | {{ARTIFACT_PATH}} | {{HASH}} | {{RESULT}} |
 
 Duplicate producer assessment: {{DUPLICATE_PRODUCER_ASSESSMENT}}.
 
 ## 6. Coverage
 
-| Metric / project | Covered units | Valid total units | Percentage | Threshold | Result |
-|---|---:|---:|---:|---:|---|
-| {{METRIC}} | {{COVERED}} | {{VALID_TOTAL}} | {{PERCENTAGE}} | {{THRESHOLD}} | {{RESULT}} |
+| Metric / project | Covered units | Valid total units | Percentage | Threshold | Gate | Result |
+|---|---:|---:|---:|---:|---|---|
+| {{METRIC}} | {{COVERED}} | {{VALID_TOTAL}} | {{PERCENTAGE}} | {{THRESHOLD}} | {{GATE}} | {{RESULT}} |
 
-Weighted totals are calculated from raw counts, never by averaging project percentages:
+Weighted totals are calculated from raw counts, never by averaging project percentages.
 
 ```text
 Weighted covered units: {{WEIGHTED_COVERED}}
 Weighted valid total units: {{WEIGHTED_VALID_TOTAL}}
 Weighted percentage: {{WEIGHTED_PERCENTAGE}}
-Excluded or invalid totals + justification: {{COVERAGE_EXCLUSIONS}}
+Excluded/invalid totals + justification: {{COVERAGE_EXCLUSIONS}}
 ```
 
-## 7. Discrimination sensor
+Gate H must not rerun the full integrated suite solely to recreate equivalent candidate coverage. If coverage is repeated after merge, record the independent Gate H reason or invalidated fingerprint here: {{GATE_H_COVERAGE_REASON}}.
+
+## 7. Discrimination sensors — Gate G only
 
 Disposition: `{{PASS_NOT_REQUIRED_NOT_MEASURED_FAIL}}`
 
 Rationale: {{SENSOR_RATIONALE}}
 
-| Targeted risk | Controlled mutation or sensor | Expected failure | Observed failure | Real candidate result | Evidence |
+| Targeted risk | Controlled mutation/sensor | Expected failure | Observed failure | Real candidate result | Evidence |
 |---|---|---|---|---|---|
 | {{RISK}} | {{MUTATION}} | {{EXPECTED}} | {{OBSERVED}} | {{REAL_RESULT}} | {{EVIDENCE}} |
 
@@ -91,49 +99,74 @@ Sensor worktree after: {{SENSOR_WORKTREE_AFTER}}
 Restoration proof: {{RESTORATION_PROOF}}
 ```
 
-`NOT_MEASURED` cannot satisfy a mandatory discrimination sensor.
+Sensors are not repeated in Gate H unless the integration invalidated the detecting evidence or repository policy explicitly requires it.
 
-## 8. Code quality and scope
+## 8. Candidate code quality and scope
 
 - [ ] Diff contains only approved activity scope.
 - [ ] Main worktree and unrelated repositories remain unchanged.
 - [ ] `git diff --check` passes.
-- [ ] Build/type-check/lint/static checks required by the matrix pass.
+- [ ] Required build/type-check/lint/static checks pass.
 - [ ] Manifest, schemas, lifecycle location and `STATE.md` agree.
 - [ ] No unresolved placeholders, silent skips or unapproved fallbacks remain.
 - [ ] No external mutation occurred without authority.
-- [ ] Final rebase or synchronization requirement is satisfied or explicitly not applicable.
+- [ ] Final rebase/synchronization requirement is satisfied or explicitly not applicable.
+- [ ] Independent verifier audited the exact candidate SHA.
 - [ ] PR metadata and reviewer handoff are ready.
 
-## 9. Findings
+## 9. Candidate findings
 
 | Severity | Finding | Owner | Disposition | Evidence |
 |---|---|---|---|---|
 | {{SEVERITY}} | {{FINDING}} | {{OWNER}} | {{DISPOSITION}} | {{EVIDENCE}} |
 
-## 10. Ecosystem status
+## 10. Develop Integration Gate H
 
-| Ecosystem gate | Integration base | Authority | Run ID | Result | Notes |
-|---|---|---|---|---|---|
-| {{ECOSYSTEM_GATE}} | {{INTEGRATION_BASE}} | {{AUTHORITY}} | {{RUN_ID}} | {{RESULT}} | {{NOTES}} |
+Gate H runs after merge on the exact authorized integration commit and owns the complete integrated regression.
 
-Package readiness and ecosystem regression are separate verdicts. A pending or unauthorized ecosystem gate must remain explicit.
-
-## 11. Final verdict
+| Field | Value |
+|---|---|
+| Integration branch | {{INTEGRATION_BRANCH}} |
+| Integrated SHA | {{INTEGRATED_SHA}} |
+| Run ID | {{GATE_H_RUN_ID}} |
+| Authority | {{GATE_H_AUTHORITY}} |
+| Full backend/repository regression | {{RESULT}} |
+| Cross-module/ecosystem regression | {{RESULT}} |
+| Global migration/integration checks | {{RESULT}} |
+| Merge-interaction findings | {{RESULT}} |
+| Gate H verdict | {{PASS_PENDING_FAIL}} |
 
 ```text
-VERDICT: {{PASS_BLOCK_FAIL}}
-REQUIREMENTS COVERED: {{RESULT}}
-DISCOVERY/EXECUTION RECONCILED: {{RESULT}}
-DUPLICATE PRODUCERS: {{RESULT}}
-TIMEOUTS/RETRIES/FLAKES: {{RESULT}}
-COVERAGE: {{RESULT}}
-DISCRIMINATION SENSOR: {{RESULT}}
-PACKAGE GATE: {{RESULT}}
-FINAL REBASE/SYNC: {{RESULT}}
-INDEPENDENT FINAL REVIEW: {{RESULT}}
-READY_FOR_PR: {{YES_NO}}
-ECOSYSTEM REGRESSION: {{RESULT}}
+Gate H command/wrapper: {{GATE_H_COMMAND}}
+Discovered: {{GATE_H_DISCOVERED}}
+Executed: {{GATE_H_EXECUTED}}
+Passed: {{GATE_H_PASSED}}
+Failed: {{GATE_H_FAILED}}
+Skipped + justification: {{GATE_H_SKIPPED}}
+Duration: {{GATE_H_DURATION}}
+Retries/flakes/warnings: {{GATE_H_RETRIES_FLAKES_WARNINGS}}
 ```
+
+Gate H must not be decomposed into child commands that rerun the same tests as separate fresh evidence.
+
+## 11. Final verdicts
+
+```text
+GATE_G_CANDIDATE: {{PASS_BLOCK_FAIL}}
+REQUIREMENTS_COVERED: {{RESULT}}
+CANDIDATE_IMPACTSET_REGRESSION: {{RESULT}}
+AFFECTED_MIGRATIONS: {{RESULT}}
+COVERAGE: {{RESULT}}
+DISCRIMINATION_SENSORS: {{RESULT}}
+INDEPENDENT_FINAL_REVIEW: {{RESULT}}
+READY_FOR_PR_OR_MERGE: {{YES_NO}}
+
+GATE_H_DEVELOP_INTEGRATION: {{PASS_PENDING_FAIL}}
+FULL_INTEGRATED_REGRESSION: {{RESULT}}
+ECOSYSTEM_REGRESSION: {{RESULT}}
+INTEGRATED_DEVELOP_HEALTH: {{RESULT}}
+```
+
+Gate G PASS means **merge-ready candidate**. It does not mean the complete integrated product has passed. Global/integrated success is claimed only after Gate H passes on the merged integration SHA.
 
 Blocking rationale or residual risk: {{RATIONALE}}.
