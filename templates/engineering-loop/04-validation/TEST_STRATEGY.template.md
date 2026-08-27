@@ -2,12 +2,13 @@
 
 ## 1. Contract and principle
 
-- Loop version: `0.0.1`.
-- Task validation addresses the risk of the task.
-- Branch/package validation addresses the complete activity package.
-- Base-branch/ecosystem validation addresses integration with the surrounding product.
-- The final package gate keeps every applicable assurance and adds lifecycle, manifest, containment, state and harness checks.
-- A check is `PASS` only with fresh evidence from the exact candidate commit or worktree state. Missing evidence is not success.
+- Loop version: `0.0.2`.
+- Task validation addresses the risk introduced by the current task.
+- Candidate validation addresses the accumulated `ImpactSet` and activity-specific boundaries before merge.
+- Develop integration validation addresses full-system regression after the candidate is merged into the authorized integration branch.
+- The same broad regression must not run once on the feature branch and again on `develop` merely to be safe.
+- A check is `PASS` only with fresh evidence from the exact candidate commit, worktree state, or integrated `develop` commit that owns that gate.
+- Missing evidence is not success.
 
 ## 2. Provenance
 
@@ -34,124 +35,158 @@ Record the following before implementation. Use `N/A — because ...` only when 
 | Special boundaries | {{SPECIAL_BOUNDARIES}} |
 | Runtime or configuration | {{RUNTIME_CONFIGURATION}} |
 | Producer and artifact reuse plan | {{PRODUCER_REUSE_PLAN}} |
-| Deferred package gates | {{DEFERRED_PACKAGE_GATES}} |
-| Deferred ecosystem gates | {{DEFERRED_ECOSYSTEM_GATES}} |
+| Candidate-gate scope | {{CANDIDATE_GATE_SCOPE}} |
+| Develop integration gate | {{DEVELOP_GATE_SCOPE}} |
 | Explicitly not authorized | {{NOT_AUTHORIZED}} |
 
 ## 4. Requirement and coverage matrix
 
-Every approved requirement has at least one test ID and one evidence owner. Every matrix row declares `REQUIRED` or `N/A — because ...`; blank applicability is a failure.
+Every approved requirement has at least one evidence owner. Requirement IDs are traceability, not a quota of tests. Multiple requirements may be proved by one high-value scenario when they share the same defect path.
 
-| Requirement | Risk | Test ID | Level | Applicability | Expected evidence | Owner |
+| Requirement | Risk | Test / evidence ID | Level | Applicability | Expected evidence | Owner |
 |---|---|---|---|---|---|---|
 | {{REQ_ID}} | {{RISK}} | {{TEST_ID}} | {{LEVEL}} | {{REQUIRED_OR_NA}} | {{EVIDENCE}} | {{OWNER}} |
 
-Coverage levels may include unit, integration, contract, end-to-end, activation, static analysis, migration, security, performance, manual inspection and ecosystem regression. The selected level must discriminate the stated risk.
+Coverage levels may include unit, integration, contract, end-to-end, activation, static analysis, migration, security, performance, manual inspection, candidate gate and develop integration regression. Select the smallest level that discriminates the stated risk.
 
-## 5. Focused task gate
+## 5. Warm focused task gate
 
-Before every test or gate, answer:
+Before every command, answer:
 
-> **What new risk from this task does this command prove that was not already
-> proved by an earlier task or reserved for the final package gate?**
+> **What new risk from this task does this command prove that was not already proved by an earlier task, reserved for the candidate gate, or owned by the develop integration gate?**
 
-If the answer is `none` or `just to be safe`, the execution is redundant and
-must be removed or assigned to its proper package/ecosystem owner. Do not reduce
-coverage: prove each risk once, at the smallest level that discriminates it.
+If the answer is `none` or `just to be safe`, the execution is redundant and must be removed or assigned to its proper owner.
 
-The default task gate includes only applicable checks from this list:
+The default task gate includes only applicable checks:
 
-1. Build or type-check the affected project.
-2. Run every new or modified test.
+1. Build or type-check the affected project when the current `BuildKey` is invalid.
+2. Run every new or modified valuable test.
 3. Run existing tests directly related to changed behavior.
 4. Validate changed test infrastructure.
 5. Validate direct consumers and declared special boundaries.
 6. Run the smallest applicable static, schema, manifest or lifecycle check.
-7. Run `git diff --check` against the candidate.
+7. Run `git diff --check` against the candidate when relevant.
 8. Reconcile discovered, executed, passed, failed and skipped counts.
 9. Record exit code, duration, warnings, timeouts, retries and flakes.
 
-Do not automatically run broad or complete suites, global coverage, migrations, full frontend journeys, global topology or security scans, backup/restore exercises, benchmarks or repetitions. Run them when the risk matrix, package gate or ecosystem gate makes them applicable, and record why.
+Do not automatically run broad suites, repository-wide coverage, all migrations, full frontend journeys, global topology/security scans, backup/restore exercises, benchmarks or repetitions.
 
-Use these execution shapes:
+Execution shapes:
 
-- **Task:** smallest test for the new risk, directly affected checks, focused
-  review, atomic commit.
-- **Correction:** detecting test, directly impacted checks, finding recheck.
-  Repeat a broad audit only when contract, security boundary, architecture or
-  scope changed.
-- **Final package:** coverage once, complete suite or wrapper once, deep
-  verifier and representative discrimination sensor.
-- **Develop/ecosystem:** complete regression after integration on the
-  authorized base.
+- **Task:** smallest detecting test + directly affected checks + focused review + atomic commit.
+- **Correction:** detecting test + directly impacted checks + finding recheck. Repeat a broad audit only when the contract, security boundary, architecture or scope changed.
+- **Candidate Gate:** accumulated `ImpactSet` regression + changed mandatory boundaries + affected migrations + coverage required for changed/owned code + representative discrimination sensors + evidence reconciliation + independent verifier.
+- **Develop Integration Gate:** one complete integrated regression on the merged base branch, including cross-module/ecosystem checks applicable to that repository.
 
-Never execute a wrapper and then its child commands again as fresh evidence for
-the same gate. Preflight/runtime facts remain valid for the session until the
-environment, worktree or relevant HEAD changes. Requirement IDs provide
-traceability; they are not a quota of tests.
+Never execute a wrapper and then its child commands again as fresh evidence for the same gate. Preflight/runtime facts remain valid until environment, worktree, candidate HEAD or relevant producer inputs change.
 
-## 6. Producers and artifact reuse
+## 6. Candidate Gate G — pre-merge
 
-- Restore and build once per `RunId`, then reuse the exact output while the candidate commit and inputs remain unchanged.
-- OpenAPI, coverage, generated manifests and similar outputs have one logical producer per `RunId`.
+Gate G answers:
+
+> **Is this activity candidate correct, sufficiently evidenced, and safe to merge?**
+
+It runs on the exact final candidate after task commits and corrective cycles. By default it requires:
+
+- all approved requirements mapped to fresh evidence;
+- final build of the affected candidate graph when `BuildKey` requires it;
+- regression over the accumulated `ImpactSet`, direct/transitive consumers and changed mandatory boundaries;
+- only migrations/schema upgrade paths affected by the activity;
+- coverage once for new/changed package code when required by the approved thresholds;
+- representative discrimination sensors once, when applicable;
+- producer invocation/artifact/hash reconciliation;
+- code quality, scope, worktree containment and lifecycle/state validation;
+- independent verification of the exact final candidate commit;
+- final PR readiness assessment;
+- explicit declaration that full integrated regression is owned by Gate H on `develop`.
+
+### Gate G must not duplicate Gate H
+
+When a mandatory Develop Integration Gate exists and will run immediately after merge, Gate G **must not** run the complete repository/backend/ecosystem suite merely to duplicate Gate H.
+
+A pre-merge full regression is allowed only when one of these conditions is explicitly documented:
+
+1. the repository has no guaranteed Develop Integration Gate;
+2. merge policy requires full regression before merge and no equivalent post-merge gate exists;
+3. the activity changes the test runner, global build graph, repository-wide infrastructure or another boundary whose risk cannot be discriminated by a bounded accumulated `ImpactSet`;
+4. the owner explicitly authorizes an exceptional duplicate run for a documented release risk.
+
+If none applies, full repository regression belongs only to Gate H.
+
+## 7. Develop Integration Gate H — post-merge
+
+Gate H answers:
+
+> **After integrating this candidate with the current base branch, does the complete product/repository still pass?**
+
+Gate H runs once on the exact integrated `develop` (or repository-designated integration branch) commit and owns:
+
+- complete backend/repository regression;
+- complete ecosystem/cross-module regression applicable to the repository;
+- global migration/integration verification when required by repository policy;
+- global OpenAPI/build/static integration checks when applicable;
+- verification of merge interactions and concurrent upstream changes.
+
+Gate H does **not** repeat, by default:
+
+- candidate discrimination sensors;
+- candidate-specific mutation experiments;
+- coverage collected only to prove the activity's changed-code/package threshold;
+- focused task suites already subsumed by the full integrated run as separate commands;
+- independent candidate verifier review.
+
+Repeat one of those only if the merge/integration changed the input fingerprint that made the earlier evidence valid or the repository explicitly defines it as a Gate H obligation.
+
+A Gate H failure is an integration failure. It must trigger correction/rollback policy and cannot be hidden by the earlier Gate G PASS.
+
+## 8. Producers and artifact reuse
+
+- Restore and build once per valid input fingerprint, then reuse exact outputs while candidate and inputs remain unchanged.
+- OpenAPI, coverage, generated manifests and similar outputs have one logical producer per applicable gate/RunId.
 - Reused physical copies must be reconciled by hash and provenance.
 - Aggregate wrappers must not execute the same producer again invisibly.
-- Cache evidence never crosses commits, material worktree changes, toolchain changes or configuration changes.
-- Heavy gates execute sequentially unless their isolation and resource budgets are proven.
-- Resource-sensitive performance and discrimination sensors run once in a dedicated
-  package lane, outside coverage instrumentation and broad suites that would distort
-  their measurements. The aggregate package wrapper owns that lane and must not
-  execute it again through a child suite.
+- Cache evidence never crosses material candidate changes, toolchain changes, relevant configuration changes or integrated-branch changes.
+- Heavy gates execute sequentially unless isolation and resource budgets are proven.
+- Resource-sensitive performance and discrimination sensors run once in a dedicated candidate lane, outside coverage instrumentation and broad suites that would distort their measurements.
 - Every producer records invocation count, artifact location, hash, reuse consumers and result.
 
-## 7. Coverage contract
+## 9. Coverage contract
 
-For every applicable coverage metric, record covered units, valid total units, percentage and threshold. Repository-wide or package totals are weighted from raw counts:
+For every applicable coverage metric, record covered units, valid total units, percentage and threshold. Repository/package totals are weighted from raw counts:
 
 `weighted percentage = sum(covered units) / sum(valid total units) * 100`
 
-Never average percentages from different projects. Exclude invalid or non-instrumented totals explicitly; do not convert missing data into zero or success. Thresholds and exclusions must be approved before Gate G.
+Never average percentages from different projects. Exclude invalid or non-instrumented totals explicitly; do not convert missing data into zero or success.
 
-## 8. Discrimination sensor
+Coverage is normally a Gate G producer for changed/owned code. Gate H must not run the complete regression a second time only to regenerate equivalent coverage. Collect Gate H coverage only when it is independently required by repository policy or the integration invalidated the Gate G coverage evidence.
 
-Risk-applicable tests require a discrimination sensor that demonstrates the evidence can fail for the targeted defect. Allowed dispositions are:
+## 10. Discrimination sensors
 
-- `PASS`: controlled mutation or equivalent sensor failed as expected and the real candidate passed afterward.
-- `NOT_REQUIRED`: a documented risk argument shows why a sensor adds no useful discrimination.
-- `NOT_MEASURED`: evidence was unavailable; this cannot satisfy a mandatory sensor.
-- `FAIL`: the sensor did not distinguish the defect or was not restored cleanly.
+A discrimination sensor demonstrates that important evidence can actually fail for the targeted defect. Allowed dispositions:
 
-Run mutations only in an isolated, recoverable worktree. Record before/after status, mutation, expected failure, observed failure and restoration proof.
+- `PASS`: controlled mutation/equivalent sensor failed as expected and the real candidate passed afterward.
+- `NOT_REQUIRED`: documented risk argument shows why a sensor adds no useful discrimination.
+- `NOT_MEASURED`: evidence unavailable; cannot satisfy a mandatory sensor.
+- `FAIL`: sensor did not distinguish the defect or was not restored cleanly.
 
-## 9. Package Gate G
+Run sensors only in an isolated, recoverable candidate worktree. Record before/after status, mutation, expected failure, observed failure and restoration proof.
 
-Gate G runs on the final candidate after task commits and corrective cycles. It requires:
+Sensors belong to Gate G and are **not repeated in Gate H** unless the integrated change invalidates the detecting test or the sensor itself is explicitly part of repository integration policy.
 
-- all approved requirements mapped to fresh evidence;
-- final build and complete applicable package regression;
-- final rebase or base synchronization when required by repository policy, followed by revalidation;
-- discovered/executed/passed/failed/skipped reconciliation, with skip justifications;
-- explicit timeouts, retries, flakes and warnings;
-- weighted coverage and discrimination-sensor dispositions where applicable;
-- producer invocation and artifact/hash reconciliation;
-- code quality, scope, worktree containment and lifecycle/state validation;
-- independent verification of the exact final commit;
-- final PR readiness assessment;
-- ecosystem regression status recorded separately from package status.
+## 11. Gate sequence
 
-Package success must never be relabeled ecosystem success. When ecosystem execution requires external authority or a different base branch, record `PENDING_EXTERNAL_AUTHORITY` or `NOT_RUN — because ...`; do not declare global completion.
-
-## 10. Gate sequence
-
-1. Task-focused gate and independent task review.
-2. Corrective loop, up to the approved cycle limit, for any failure.
+1. Warm task-focused gates and task reviews.
+2. Corrective loops for task/finding failures.
 3. Final candidate synchronization/rebase when required.
-4. Final package regression and evidence-or-zero matrix.
-5. Producer, artifact, count, coverage and sensor reconciliation.
-6. Independent verifier review of the exact final SHA.
-7. PR readiness decision.
-8. Ecosystem regression on the authorized integration base.
+4. Gate G: accumulated ImpactSet, affected migrations/boundaries, required coverage, sensors and evidence reconciliation.
+5. Independent verifier review of the exact candidate SHA.
+6. PR readiness decision.
+7. Merge under repository authority.
+8. Gate H on the exact integrated `develop` commit: full regression once.
+9. Integration verdict and correction/rollback when necessary.
 
-## 11. Evidence retention
+## 12. Evidence retention
 
-Store concise evidence under `04-validation/evidence/`. Evidence identifies `RunId`, command or structured action, exact scope, candidate SHA or dirty set, exit code, duration, counts, producer hashes, verifier and timestamp. External push, PR creation, deployment, production mutation and ecosystem writes require their own explicit authority.
+Store concise evidence under `04-validation/evidence/`. Evidence identifies gate (`Task`, `G`, or `H`), `RunId`, command/action, exact scope, candidate or integrated SHA, exit code, duration, counts, producer hashes, verifier when applicable, and timestamp.
+
+Package/candidate success must never be relabeled integrated ecosystem success. Gate G may be `PASS` while Gate H remains `PENDING`; the activity is merge-ready, not globally integrated, until Gate H passes.
