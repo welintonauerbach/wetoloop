@@ -10,9 +10,42 @@ Execute exactly one eligible task unless the activity explicitly authorizes sequ
 4. Confirm dependencies, one writer, independent reviewer/verifier and harness command.
 5. Stop on any governance mismatch; do not repair authority implicitly.
 
+## Executive progress checkpoints
+
+Keep the owner informed with short execution checkpoints. These updates are operational orientation, not technical reports.
+
+Required visible states:
+
+- `INICIADA` — once when a task starts, with one line describing the objective;
+- `EM EXECUÇÃO` — only after a meaningful milestone when the task spans multiple implementation/test/corrective phases;
+- `CORRECTIVE LOOP` — when a deterministic failure enters correction, with the bounded cause and next action;
+- `CONCLUÍDA` — once after the task gate/review passes, with one-line outcome, gate result and next task;
+- `BLOCKED` — immediately for a real STOP condition, with the blocker in one line.
+
+Preferred shape:
+
+```text
+▶ T02 INICIADA — <one-line objective>.
+… T02 EM EXECUÇÃO — <one-line status>. Progresso: <criteria closed/total or phase>. Próximo: <one action>.
+✓ T02 CONCLUÍDA — <one-line result>. Gate: PASS. Próxima: <task>.
+```
+
+Rules:
+
+- keep each checkpoint to 1–3 short lines;
+- use objective progress such as criteria counts, current phase, gate state and next action;
+- do not provide wall-clock ETA, delivery promises or speculative duration estimates;
+- do not paste raw logs, command dumps, stack traces, secrets or sensitive configuration;
+- do not interrupt an active command merely to report status; checkpoint between meaningful phases;
+- a fast task may emit only `INICIADA` and `CONCLUÍDA`;
+- do not create repository commits/files solely for intermediate checkpoints;
+- at task completion, fold the final one-line executive summary into the normal `STATE.md` handoff using existing state fields/human context rather than creating a separate reporting artifact.
+
+Progress reporting must remain lightweight and must never trigger duplicate tests, producers or validation runs.
+
 ## Per-task loop
 
-Implement only the bounded capability, add focused tests, run the smallest declared warm gate, obtain review, reconcile evidence/state, check the commit and create one atomic commit. Do not silently retry, skip or widen a filter to obtain PASS.
+Emit `INICIADA`, implement only the bounded capability, add focused tests, emit `EM EXECUÇÃO` only after meaningful milestones when useful, run the smallest declared warm gate, obtain review, reconcile evidence/state, check the commit, create one atomic commit, fold the one-line executive summary into `STATE.md`, emit `CONCLUÍDA`, then continue when sequential execution is authorized. Do not silently retry, skip or widen a filter to obtain PASS.
 
 Before running a command, state the unique new task risk it proves. Skip repetition owned by an earlier task, Candidate Gate G or Develop Integration Gate H.
 
