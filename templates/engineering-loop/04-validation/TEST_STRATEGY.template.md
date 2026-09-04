@@ -76,7 +76,7 @@ Execution shapes:
 - **Task:** smallest detecting test + directly affected checks + focused review + atomic commit.
 - **Correction:** detecting test + directly impacted checks + finding recheck. Repeat a broad audit only when the contract, security boundary, architecture or scope changed.
 - **Candidate Gate:** accumulated `ImpactSet` regression + changed mandatory boundaries + affected migrations + coverage required for changed/owned code + representative discrimination sensors + evidence reconciliation + independent verifier.
-- **Develop Integration Gate:** one complete integrated regression on the merged base branch, including cross-module/ecosystem checks applicable to that repository.
+- **Develop Integration Gate:** one complete integrated regression on the merged base branch, including cross-module/ecosystem checks applicable to that repository, preceded by delta classification and fingerprint reconciliation for auxiliary producers.
 
 Never execute a wrapper and then its child commands again as fresh evidence for the same gate. Preflight/runtime facts remain valid until environment, worktree, candidate HEAD or relevant producer inputs change.
 
@@ -119,23 +119,49 @@ Gate H answers:
 
 > **After integrating this candidate with the current base branch, does the complete product/repository still pass?**
 
+### Mandatory Gate H preflight — Delta Classification + Fingerprint Reconciliation
+
+Before any expensive Gate H producer:
+
+1. record the exact Gate G candidate SHA and exact integrated branch SHA;
+2. compare `candidate..integrated`;
+3. classify every post-candidate delta into:
+   - production source;
+   - backend/tests;
+   - build/project/restore inputs;
+   - schema/migrations;
+   - OpenAPI producer inputs;
+   - HTTP/topology/security inputs;
+   - frontend/consumer inputs;
+   - documentation/governance only;
+4. reconcile applicable producer fingerprints, including `RestoreKey`, `BuildKey`, relevant `SchemaKey`s, `OpenApiKey`, `HttpSecurityKey`, `FrontendConsumerKey`, and generated-artifact keys;
+5. record one action for every auxiliary producer: `REUSE`, `RERUN`, or `N/A`, including artifact hash/provenance when reused.
+
+The full integrated repository/backend regression remains fresh mandatory Gate H evidence. Fingerprint reconciliation only governs auxiliary producer/wrapper repetition.
+
 Gate H runs once on the exact integrated `develop` (or repository-designated integration branch) commit and owns:
 
-- complete backend/repository regression;
+- complete backend/repository non-migration regression;
 - complete ecosystem/cross-module regression applicable to the repository;
-- global migration/integration verification when required by repository policy;
-- global OpenAPI/build/static integration checks when applicable;
+- complete migration/integration verification when required by repository policy;
 - verification of merge interactions and concurrent upstream changes.
 
-Gate H does **not** repeat, by default:
+Global build/OpenAPI/HTTP-security/frontend/static producers run only when their reconciled fingerprint or explicit repository Gate H policy requires fresh execution.
 
-- candidate discrimination sensors;
-- candidate-specific mutation experiments;
-- coverage collected only to prove the activity's changed-code/package threshold;
-- focused task suites already subsumed by the full integrated run as separate commands;
-- independent candidate verifier review.
+### Gate H anti-duplication rules
 
-Repeat one of those only if the merge/integration changed the input fingerprint that made the earlier evidence valid or the repository explicitly defines it as a Gate H obligation.
+Gate H MUST NOT:
+
+- execute a wrapper containing the full backend/repository regression and then execute the same child lane separately;
+- rerun focused package/module suites already subsumed by the complete non-migration lane;
+- rerun migrations module-by-module after the complete migration/integration lane;
+- regenerate OpenAPI when `OpenApiKey` remains valid and accepted artifact hash/provenance remains reusable;
+- rerun a complete HTTP/security/topology wrapper when `HttpSecurityKey` remains valid; when only a bounded sub-gate is invalidated and targeted execution is supported, run only that sub-gate;
+- run full frontend `verify`, coverage, lint, typecheck or build solely because Gate H exists when `FrontendConsumerKey` remains valid and frontend is outside activity scope; when only a consumed API contract changed, prefer the smallest repository-required consumer-contract check;
+- rerun restore/build auxiliary producers when their fingerprint is unchanged and a valid exact producer output is available;
+- repeat candidate discrimination sensors, candidate mutation experiments, independent candidate verifier review or candidate-only coverage without an invalidated evidence fingerprint or explicit repository Gate H obligation.
+
+Reused auxiliary producers must be recorded as evidence with prior PASS/artifact identity, fingerprint and hash/provenance. A skipped expensive command is valid only when reuse is explicit and reviewable.
 
 A Gate H failure is an integration failure. It must trigger correction/rollback policy and cannot be hidden by the earlier Gate G PASS.
 
@@ -149,6 +175,7 @@ A Gate H failure is an integration failure. It must trigger correction/rollback 
 - Heavy gates execute sequentially unless isolation and resource budgets are proven.
 - Resource-sensitive performance and discrimination sensors run once in a dedicated candidate lane, outside coverage instrumentation and broad suites that would distort their measurements.
 - Every producer records invocation count, artifact location, hash, reuse consumers and result.
+- Gate H auxiliary reuse is decided only after candidate-to-integrated delta classification and fingerprint reconciliation.
 
 ## 9. Coverage contract
 
@@ -182,11 +209,14 @@ Sensors belong to Gate G and are **not repeated in Gate H** unless the integrate
 5. Independent verifier review of the exact candidate SHA.
 6. PR readiness decision.
 7. Merge under repository authority.
-8. Gate H on the exact integrated `develop` commit: full regression once.
-9. Integration verdict and correction/rollback when necessary.
+8. Gate H preflight: candidate-to-integrated delta classification and fingerprint reconciliation.
+9. Gate H on the exact integrated `develop` commit: full regression once + only invalidated auxiliary producers.
+10. Integration verdict and correction/rollback when necessary.
 
 ## 12. Evidence retention
 
 Store concise evidence under `04-validation/evidence/`. Evidence identifies gate (`Task`, `G`, or `H`), `RunId`, command/action, exact scope, candidate or integrated SHA, exit code, duration, counts, producer hashes, verifier when applicable, and timestamp.
+
+Gate H evidence additionally records candidate SHA, integrated SHA, delta categories, reconciled fingerprints, and explicit `REUSE/RERUN/N/A` decisions for auxiliary producers.
 
 Package/candidate success must never be relabeled integrated ecosystem success. Gate G may be `PASS` while Gate H remains `PENDING`; the activity is merge-ready, not globally integrated, until Gate H passes.

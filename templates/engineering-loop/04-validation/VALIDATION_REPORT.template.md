@@ -124,6 +124,32 @@ Sensors are not repeated in Gate H unless the integration invalidated the detect
 
 Gate H runs after merge on the exact authorized integration commit and owns the complete integrated regression.
 
+### Delta Classification + Fingerprint Reconciliation
+
+This preflight is mandatory before any expensive Gate H producer.
+
+```text
+Gate G candidate SHA: {{HEAD_SHA}}
+Integrated SHA: {{INTEGRATED_SHA}}
+Diff range: {{HEAD_SHA}}..{{INTEGRATED_SHA}}
+```
+
+| Delta category | Changed? | Fingerprint | Valid after merge? | Action | Evidence / provenance |
+|---|---|---|---|---|---|
+| Production source | {{YES_NO}} | BuildKey | {{YES_NO}} | {{REUSE_RERUN_NA}} | {{EVIDENCE}} |
+| Backend tests | {{YES_NO}} | BuildKey/EvidenceKey | {{YES_NO}} | {{REUSE_RERUN_NA}} | {{EVIDENCE}} |
+| Build/project/restore inputs | {{YES_NO}} | RestoreKey + BuildKey | {{YES_NO}} | {{REUSE_RERUN_NA}} | {{EVIDENCE}} |
+| Schema/migrations | {{YES_NO}} | {{SCHEMA_KEYS}} | {{YES_NO}} | {{REUSE_RERUN_NA}} | {{EVIDENCE}} |
+| OpenAPI inputs | {{YES_NO}} | OpenApiKey | {{YES_NO}} | {{REUSE_RERUN_NA}} | {{EVIDENCE}} |
+| HTTP/topology/security inputs | {{YES_NO}} | HttpSecurityKey | {{YES_NO}} | {{REUSE_RERUN_NA}} | {{EVIDENCE}} |
+| Frontend/consumer inputs | {{YES_NO}} | FrontendConsumerKey | {{YES_NO}} | {{REUSE_RERUN_NA}} | {{EVIDENCE}} |
+| Generated artifacts | {{YES_NO}} | GeneratedArtifactKey | {{YES_NO}} | {{REUSE_RERUN_NA}} | {{EVIDENCE}} |
+| Documentation/governance only | {{YES_NO}} | N/A | N/A | N/A | {{EVIDENCE}} |
+
+Every `REUSE` decision must identify the prior PASS/artifact, valid fingerprint and stable hash/provenance. Reuse is explicit evidence, never silent omission.
+
+### Integrated execution
+
 | Field | Value |
 |---|---|
 | Integration branch | {{INTEGRATION_BRANCH}} |
@@ -137,7 +163,8 @@ Gate H runs after merge on the exact authorized integration commit and owns the 
 | Gate H verdict | {{PASS_PENDING_FAIL}} |
 
 ```text
-Gate H command/wrapper: {{GATE_H_COMMAND}}
+Complete non-migration/backend command: {{GATE_H_MAIN_COMMAND}}
+Complete migration/integration command: {{GATE_H_MIGRATION_COMMAND}}
 Discovered: {{GATE_H_DISCOVERED}}
 Executed: {{GATE_H_EXECUTED}}
 Passed: {{GATE_H_PASSED}}
@@ -147,7 +174,18 @@ Duration: {{GATE_H_DURATION}}
 Retries/flakes/warnings: {{GATE_H_RETRIES_FLAKES_WARNINGS}}
 ```
 
-Gate H must not be decomposed into child commands that rerun the same tests as separate fresh evidence.
+Global build/OpenAPI/HTTP-security/frontend/static producers run only when fingerprint reconciliation or explicit repository Gate H policy requires fresh evidence.
+
+### Anti-duplication checks
+
+- [ ] No full wrapper plus duplicate standalone full backend/repository lane.
+- [ ] No package/module suite repeated after the complete non-migration lane.
+- [ ] No module-by-module migration repetition after the complete migration lane.
+- [ ] OpenAPI regenerated only when `OpenApiKey` invalidated.
+- [ ] HTTP/security/topology rerun only when `HttpSecurityKey` invalidated or policy required it; targeted sub-gate used when available.
+- [ ] Full frontend verify/coverage/build not rerun when `FrontendConsumerKey` remained valid and frontend was outside activity scope.
+- [ ] Restore/build reused when fingerprints remained valid and reusable outputs existed.
+- [ ] Candidate sensors, mutation experiments, candidate verifier and candidate-only coverage were not repeated without invalidation.
 
 ## 11. Final verdicts
 
